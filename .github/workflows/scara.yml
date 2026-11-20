@@ -1,0 +1,72 @@
+name: SCARA Opportunity Engine
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"   # scan 4×/day: 03:17, 09:17, 15:17, 21:17 Addis Ababa time
+    - cron: "43 15 * * *"    # daily PDF report: 18:43 Addis Ababa time
+    - cron: "11 5 * * 1"     # weekly PDF report: Monday 08:11 Addis Ababa time
+  workflow_dispatch:          # lets you run any task by hand from the Actions tab
+    inputs:
+      task:
+        description: "What to run"
+        type: choice
+        options: [check, scan, daily, weekly]
+        default: check
+
+permissions:
+  contents: write             # needed to save the encrypted state file
+
+concurrency:
+  group: scara                # never run two jobs at once (they share state)
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      STATE_PASSPHRASE: ${{ secrets.STATE_PASSPHRASE }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      EMAIL_USER: ${{ secrets.EMAIL_USER }}
+      EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+      EMAIL_TO: ${{ secrets.EMAIL_TO }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Decide task
+        id: task
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then T="${{ inputs.task }}";
+          elif [ "${{ github.event.schedule }}" = "43 15 * * *" ]; then T=daily;
+          elif [ "${{ github.event.schedule }}" = "11 5 * * 1" ]; then T=weekly;
+          else T=scan; fi
+          echo "task=$T" >> "$GITHUB_OUTPUT"
+
+      - name: Run
+        run: |
+          case "${{ steps.task.outputs.task }}" in
+            check)  python run.py check ;;
+            scan)   python run.py scan ;;
+            daily)  python run.py report daily ;;
+            weekly) python run.py report weekly ;;
+          esac
+
+      - name: Save encrypted state
+        if: always() && steps.task.outputs.task != 'check'
+        run: |
+          git config user.name "scara-bot"
+          git config user.email "scara-bot@users.noreply.github.com"
+          git add state/state.db.enc 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "state update [skip ci]" && git push)
