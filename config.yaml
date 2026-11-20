@@ -1,0 +1,116 @@
+# ─────────────────────────────────────────────────────────────
+# SCARA Opportunity Engine — settings
+# You normally don't need to change anything here.
+# ─────────────────────────────────────────────────────────────
+
+# Total minutes each scan may spend (split between the hunting grounds
+# automatically, giving more time to grounds that find more).
+scan_budget_minutes: 40
+
+# Your own wallet addresses (public addresses only — NEVER private keys).
+# Used by ground #3 to check rewards you already qualify for.
+my_wallets: []
+#  - "0xYourAddressHere"
+
+# Minimum score for a finding to appear in the "Top opportunities" table.
+min_score_for_top: 1.0
+
+# LLM providers, tried in this order. A provider is skipped automatically
+# if its API key secret isn't set. Model names change over time — if one
+# stops working, replace it with a current model from the provider's site.
+llm_providers:
+  - name: groq
+    base_url: https://api.groq.com/openai/v1
+    key_env: GROQ_API_KEY
+    model: openai/gpt-oss-20b
+    daily_calls: 900
+  - name: cerebras
+    base_url: https://api.cerebras.ai/v1
+    key_env: CEREBRAS_API_KEY
+    model: gpt-oss-120b
+    daily_calls: 900
+  - name: gemini
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai
+    key_env: GEMINI_API_KEY
+    model: gemini-flash-latest
+    daily_calls: 200
+  - name: openrouter
+    base_url: https://openrouter.ai/api/v1
+    key_env: OPENROUTER_API_KEY
+    model: openrouter/free
+    daily_calls: 45
+
+# Ground #1 and #7: smaller/less-watched EVM chains, via free Blockscout
+# explorers (no API key needed) and free public RPC endpoints.
+chains:
+  - name: gnosis
+    explorer: https://gnosis.blockscout.com
+    rpc: https://rpc.gnosischain.com
+    native_usd_hint: 1.0
+  - name: optimism
+    explorer: https://optimism.blockscout.com
+    rpc: https://mainnet.optimism.io
+    native_usd_hint: 3000
+  - name: base
+    explorer: https://base.blockscout.com
+    rpc: https://mainnet.base.org
+    native_usd_hint: 3000
+  - name: ethereum
+    explorer: https://eth.blockscout.com
+    rpc: https://ethereum-rpc.publicnode.com
+    native_usd_hint: 3000
+
+# Ground #1: function names that typically pay whoever calls them.
+caller_reward_functions:
+  - harvest
+  - harvestAll
+  - compound
+  - poke
+  - rebalance
+  - settle
+  - checkpoint
+  - distribute
+  - claimAndDistribute
+  - upkeep
+  - performUpkeep
+  - tend
+  - earn
+  - work
+  - kick
+  - flush
+  - sweep
+  - updateReward
+  - liquidate
+# View functions that often reveal the caller's reward.
+caller_reward_views:
+  - callerReward
+  - callerFee
+  - harvestReward
+  - bounty
+  - keeperReward
+  - incentive
+  - pendingRewards
+  - callFee
+  - reward
+
+# Ground #5: prize/bounty pages to watch for changes.
+prize_watchlist:
+  - name: GIMPS (Mersenne prime search) news
+    url: https://www.mersenne.org/
+  - name: EFF Cooperative Computing Awards
+    url: https://www.eff.org/awards/coop
+  - name: Clay Mathematics Millennium Problems
+    url: https://www.claymath.org/millennium-problems/
+
+# Ground #6: rule-change feeds (RSS/Atom or JSON APIs).
+rule_feeds:
+  - name: SEC press releases
+    url: https://www.sec.gov/news/pressreleases.rss
+  - name: CFTC press releases
+    url: https://www.cftc.gov/RSS/RSSGP/rssgp.xml
+  - name: Ethereum Foundation blog
+    url: https://blog.ethereum.org/feed.xml
+federal_register_terms:
+  - "digital asset"
+  - "incentive program"
+  - "tender offer"
