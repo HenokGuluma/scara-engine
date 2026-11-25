@@ -38,6 +38,13 @@ CREATE TABLE IF NOT EXISTS llm_usage (day TEXT, provider TEXT, calls INTEGER,
 """
 
 
+def configure(name):
+    """Use a separate state file (e.g. 'forge') so engines never clash."""
+    global DB_PATH, ENC_PATH
+    DB_PATH = ROOT / "work" / f"{name}.db"
+    ENC_PATH = STATE_DIR / f"{name}.db.enc"
+
+
 def _fernet():
     pw = os.environ.get("STATE_PASSPHRASE", "")
     if not pw:

@@ -34,6 +34,11 @@ llm_providers:
     key_env: GEMINI_API_KEY
     model: gemini-flash-latest
     daily_calls: 200
+  - name: mistral
+    base_url: https://api.mistral.ai/v1
+    key_env: MISTRAL_API_KEY
+    model: mistral-small-latest
+    daily_calls: 200
   - name: openrouter
     base_url: https://openrouter.ai/api/v1
     key_env: OPENROUTER_API_KEY

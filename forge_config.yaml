@@ -1,0 +1,82 @@
+# ─────────────────────────────────────────────────────────────
+# Idea Forge — settings (you normally don't need to change these)
+# ─────────────────────────────────────────────────────────────
+
+# How many generation calls per day. Each call produces ~8 approaches,
+# so 40 calls ≈ 320 approaches/day.
+generation_calls: 40
+ideas_per_call: 8
+
+# How many survive each stage.
+quick_screen_keep: 12     # after cheap batch scoring
+tournament_size: 4        # finalists that meet head-to-head
+worthy_mentions: 6        # runner-ups listed in the PDF
+
+# Hard limits that match your goals. Ideas outside them are dropped.
+max_start_capital_usd: 500
+drop_if_human_contact: [high]
+drop_if_legal_risk: [high]
+
+# How long to remember past ideas (to avoid repeating them).
+memory_days: 45
+
+# LLM providers, tried in this order. All of these are free WITHOUT a card.
+# A provider is skipped automatically if its key secret isn't set.
+# Gemini goes first; Groq uses its larger model here, which on Groq has its
+# own daily allowance separate from the smaller model the SCARA scanner uses.
+llm_providers:
+  - name: gemini
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai
+    key_env: GEMINI_API_KEY
+    model: gemini-flash-latest
+    model_smart: gemini-flash-latest
+    daily_calls: 240
+    min_interval_s: 6
+  - name: groq
+    base_url: https://api.groq.com/openai/v1
+    key_env: GROQ_API_KEY
+    model: openai/gpt-oss-120b
+    model_smart: openai/gpt-oss-120b
+    extra: {reasoning_effort: low}   # keeps thinking short so answers fit
+    daily_calls: 300
+    min_interval_s: 2.5
+  - name: mistral
+    base_url: https://api.mistral.ai/v1
+    key_env: MISTRAL_API_KEY
+    model: mistral-small-latest
+    model_smart: mistral-medium-latest
+    daily_calls: 200
+    min_interval_s: 2
+  - name: openrouter
+    base_url: https://openrouter.ai/api/v1
+    key_env: OPENROUTER_API_KEY
+    model: openrouter/free
+    daily_calls: 45
+    min_interval_s: 4
+  # Cerebras now needs a payment method; only used if you ever add its key.
+  - name: cerebras
+    base_url: https://api.cerebras.ai/v1
+    key_env: CEREBRAS_API_KEY
+    model: gpt-oss-120b
+    extra: {reasoning_effort: low}
+    daily_calls: 300
+    min_interval_s: 12
+
+# Today's "right time" signals: fresh headlines the generators react to.
+signal_feeds:
+  - name: Hacker News front page
+    url: https://hnrss.org/frontpage
+  - name: Hacker News launches
+    url: https://hnrss.org/launches
+  - name: Product Hunt
+    url: https://www.producthunt.com/feed
+  - name: TechCrunch
+    url: https://techcrunch.com/feed/
+  - name: CoinDesk
+    url: https://www.coindesk.com/arc/outboundfeeds/rss/
+  - name: SEC press releases
+    url: https://www.sec.gov/news/pressreleases.rss
+  - name: GitHub blog changelog
+    url: https://github.blog/changelog/feed/
+  - name: Federal Register (newest)
+    url: https://www.federalregister.gov/api/v1/documents.rss?order=newest
